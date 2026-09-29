@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%232563eb'/><circle cx='50' cy='50' r='40' fill='%230f172a'/><text x='50' y='60' font-size='28' font-family='Arial,sans-serif' font-weight='bold' fill='%2338bdf8' text-anchor='middle'>HOST</text></svg>">
+  <title>Lucky48 Host Control & Settlement Platform</title>
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-panel: #151d30;
+      --bg-subpanel: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-primary: #3b82f6;
+      --accent-primary-hover: #2563eb;
+      --accent-gold: #f59e0b;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --border-color: #334155;
+      --border-radius: 8px;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: #090d16;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 20px;
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-tab-btn.active {
+      color: #60a5fa;
+      border-bottom-color: var(--accent-primary);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .tab-badge {
+      background: var(--border-color);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+    .stat-box {
+      background: var(--bg-subpanel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 14px 16px;
+    }
+
+    .stat-box .title { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .stat-box .val { font-size: 22px; font-weight: 800; color: #fff; }
+    .stat-box .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .btn {
+      background: var(--accent-primary);
+      color: white;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover { background: var(--accent-primary-hover); }
+    .btn-gold { background: var(--accent-gold); color: #000; font-weight: 700; }
+    .btn-gold:hover { background: #fbbf24; }
+    .btn-green { background: #059669; color: white; }
+    .btn-green:hover { background: var(--accent-green); }
+    .btn-red { background: #dc2626; color: white; }
+    .btn-red:hover { background: var(--accent-red); }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: var(--bg-subpanel); }
+
+    .draw-slots {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .ball-slot-num {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #1e3a8a;
+      border: 2px solid var(--accent-primary);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s;
+    }
+
+    .ball-slot-num:hover { transform: scale(1.08); }
+    .ball-slot-num.mn { background: #9f1239; border-color: #f43f5e; }
+    .ball-slot-num.locked::after {
+      content: "🔒";
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      font-size: 12px;
+    }
+
+    .slider-box {
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      text-align: left;
+      background: var(--bg-subpanel);
+      color: var(--text-muted);
+      padding: 10px 8px;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .client-tabs-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .client-tab-btn {
+      background: var(--bg-subpanel);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .client-tab-btn.active {
+      background: var(--accent-primary);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    footer {
+      background: #070a12;
+      border-top: 1px solid var(--border-color);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 40;
+    }
+
+    .form-control {
+      background: var(--bg-subpanel);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo-badge">H</div>
+      <div>
+        <div style="font-size: 17px; font-weight: 800; color: #fff;">Lucky48 庄家总控与结算管理平台</div>
+        <div style="font-size: 11px; color: var(--text-muted);">HOST CONTROL & PAYOUT SETTLEMENT</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <input type="date" id="host-draw-date" class="form-control" style="width: auto;">
+      <button class="btn btn-outline" id="btn-lang">Switch to English</button>
+      <a href="index.html" target="_blank" class="btn btn-gold">📱 <span>打开手机端</span></a>
+    </div>
+  </header>
+
+  <div class="nav-tabs" id="main-nav-tabs">
+    <button class="nav-tab-btn active" data-tab="tab-draw-gen">🎲 <span>开奖生成与控盘</span></button>
+    <button class="nav-tab-btn" data-tab="tab-combined">📊 <span>汇总所有客户注单</span> <span class="tab-badge" id="badge-all-bets">0</span></button>
+    <button class="nav-tab-btn" data-tab="tab-clients">📥 <span>导入客户注单分标签</span> <span class="tab-badge" id="badge-clients-count">0</span></button>
+    <button class="nav-tab-btn" data-tab="tab-self">✍️ <span>庄家自投录单</span></button>
+    <button class="nav-tab-btn" data-tab="tab-rules">⚙️ <span>玩法概率与生肖设置</span></button>
+    <button class="nav-tab-btn" data-tab="tab-reports">📑 <span>报表结算与导出</span></button>
+  </div>
+
+  <div class="main-content">
+    <!-- TAB 1: GENERATOR -->
+    <div class="tab-pane active" id="tab-draw-gen">
+      <div class="grid-4" style="margin-bottom: 18px;">
+        <div class="stat-box">
+          <div class="title">总受注额 (Total Bet Pool)</div>
+          <div class="val" id="m-val-total-in">¥0.00</div>
+          <div class="sub" id="m-sub-total-lines">0 注单 / 0 客户</div>
+        </div>
+        <div class="stat-box">
+          <div class="title">目标开奖赔付 (Target Payout)</div>
+          <div class="val" style="color: var(--accent-gold);" id="m-val-target-payout">¥0.00</div>
+          <div class="sub" id="m-sub-target-rate">控盘档位: 30%</div>
+        </div>
+        <div class="stat-box">
+          <div class="title">本次实际赔付 (Actual Payout)</div>
+          <div class="val" style="color: #60a5fa;" id="m-val-actual-payout">--</div>
+          <div class="sub" id="m-sub-actual-rate">赔付率: --%</div>
+        </div>
+        <div class="stat-box">
+          <div class="title">庄家净盈亏 (House Net Profit)</div>
+          <div class="val" id="m-val-house-profit">--</div>
+          <div class="sub" id="m-sub-house-rate">胜率: --%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>🎲 7个开奖号码控盘生成引擎 (1-48码 / 12生肖)</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" id="btn-unlock-all">🔓 解锁所有手选码</button>
+            <button class="btn btn-red" id="btn-reset-draw">重置开奖码</button>
+          </div>
+        </div>
+
+        <div class="draw-slots" id="draw-slots-container">
+          <!-- Ball slots generated dynamically -->
+        </div>
+
+        <div class="slider-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <strong>📊 控盘目标赔付比例调节杆 (1-100 Level)</strong>
+            </div>
+            <div style="font-size: 22px; font-weight: 900; color: var(--accent-gold);" id="slider-display-val">30%</div>
+          </div>
+          <input type="range" min="1" max="100" value="30" style="width:100%; accent-color: var(--accent-gold);" id="payout-slider">
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+          <button class="btn btn-gold" id="btn-run-gen">⚡ 自动控盘生成 7 个号码</button>
+          <button class="btn btn-outline" id="btn-run-fair">🎲 完全随机纯净生成</button>
+          <button class="btn btn-green" id="btn-settle-all">✅ 一键全盘开奖结算</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 结算明细汇总预览</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>客户/设备</th><th>注数</th><th>投注总额</th><th>中奖总额</th><th>客户盈亏</th><th>庄家盈亏</th><th>中奖率</th></tr>
+          </thead>
+          <tbody id="quick-settle-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: COMBINED BETS -->
+    <div class="tab-pane" id="tab-combined">
+      <div class="card">
+        <div class="card-title">
+          <span>📊 全盘客户注单综合总表</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" id="btn-export-csv">📄 导出 CSV</button>
+            <button class="btn btn-outline" id="btn-export-json">💾 导出 JSON</button>
+          </div>
+        </div>
+        <div style="overflow-x: auto; max-height: 600px;">
+          <table class="data-table">
+            <thead>
+              <tr><th>序号</th><th>客户姓名</th><th>设备编号</th><th>时间</th><th>玩法</th><th>投注内容</th><th>投注额</th><th>赔率</th><th>最高奖金</th><th>结果</th><th>盈亏</th></tr>
+            </thead>
+            <tbody id="master-bets-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CLIENT TABS -->
+    <div class="tab-pane" id="tab-clients">
+      <div class="card">
+        <div class="card-title">
+          <span>📥 客户注单文件导入</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" id="btn-trigger-upload">📂 批量导入 (JSON/CSV)</button>
+            <input type="file" id="host-batch-file" multiple accept=".json,.csv" style="display: none;">
+            <button class="btn btn-red" id="btn-clear-clients">清空数据</button>
+          </div>
+        </div>
+        <div class="client-tabs-bar" id="client-subtabs-row"></div>
+        <div id="active-client-table-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SELF INPUT -->
+    <div class="tab-pane" id="tab-self">
+      <div class="card">
+        <div class="card-title">✍️ 庄家直接手工录入注单</div>
+        <div class="grid-3" style="margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; color: var(--text-muted);">客户姓名</label>
+            <input type="text" id="host-self-client" value="现场客户1" class="form-control">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--text-muted);">玩法选择</label>
+            <select id="host-self-gametype" class="form-control"></select>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--text-muted);">投注金额</label>
+            <input type="number" id="host-self-amt" value="10" min="1" class="form-control">
+          </div>
+        </div>
+        <div id="host-self-pick-area" style="margin: 14px 0;"></div>
+        <button class="btn btn-gold" id="btn-add-self-bet">➕ 确认录入该注</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: RULES -->
+    <div class="tab-pane" id="tab-rules">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">⚙️ 玩法赔率设置</div>
+          <table class="data-table">
+            <thead><tr><th>代码</th><th>名称</th><th>类别</th><th>赔率</th></tr></thead>
+            <tbody id="rules-settings-tbody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">🐾 12生肖设置</div>
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>中文</th><th>英文</th><th>号码</th></tr></thead>
+            <tbody id="zodiac-settings-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: REPORTS -->
+    <div class="tab-pane" id="tab-reports">
+      <div class="card">
+        <div class="card-title">📑 结算总报表</div>
+        <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="stat-box"><div class="title">今日总受注额</div><div class="val" id="rep-total-bet">¥0.00</div></div>
+          <div class="stat-box"><div class="title">今日总赔付额</div><div class="val" style="color: var(--accent-red);" id="rep-total-pay">¥0.00</div></div>
+          <div class="stat-box"><div class="title">庄家纯利润</div><div class="val" style="color: var(--accent-green);" id="rep-total-profit">¥0.00</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div style="display: flex; gap: 20px;">
+      <div><span style="font-size:11px; color:var(--text-muted);">总注数</span><div style="font-size:16px; font-weight:800;" id="f-total-count">0</div></div>
+      <div><span style="font-size:11px; color:var(--text-muted);">总下注额</span><div style="font-size:16px; font-weight:800;" id="f-total-bet">¥0.00</div></div>
+      <div><span style="font-size:11px; color:var(--text-muted);">庄家净利</span><div style="font-size:16px; font-weight:800;" id="f-house-profit">--</div></div>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted);">🟢 System Active | Enterprise Engine v2.0</div>
+  </footer>
+
+  <script>
+    /**
+     * Lucky48 Engine - Senior Engineer Architecture
+     * Modular State Management & Event Driven Execution
+     */
+    class Lucky48HostEngine {
+      constructor() {
+        this.state = {
+          lang: 'zh',
+          drawNumbers: null,
+          lockedSlots: {},
+          clientSlipsMap: {},
+          selfBetsList: [],
+          activeClientKey: null,
+          payoutSliderVal: 30,
+          zodiacConfig: {
+            1: { zh: "鼠", en: "Rat", numbers: [1, 13, 25, 37] },
+            2: { zh: "牛", en: "Ox", numbers: [2, 14, 26, 38] },
+            3: { zh: "虎", en: "Tiger", numbers: [3, 15, 27, 39] },
+            4: { zh: "兔", en: "Rabbit", numbers: [4, 16, 28, 40] },
+            5: { zh: "龙", en: "Dragon", numbers: [5, 17, 29, 41] },
+            6: { zh: "蛇", en: "Snake", numbers: [6, 18, 30, 42] },
+            7: { zh: "马", en: "Horse", numbers: [7, 19, 31, 43] },
+            8: { zh: "羊", en: "Goat", numbers: [8, 20, 32, 44] },
+            9: { zh: "猴", en: "Monkey", numbers: [9, 21, 33, 45] },
+            10: { zh: "鸡", en: "Rooster", numbers: [10, 22, 34, 46] },
+            11: { zh: "狗", en: "Dog", numbers: [11, 23, 35, 47] },
+            12: { zh: "猪", en: "Pig", numbers: [12, 24, 36, 48] }
+          },
+          rulesConfig: [
+            { id: "TM", name_zh: "特码", category: "only_mn", ratio: 50.0, input: "num", count: 1 },
+            { id: "TX", name_zh: "特肖", category: "only_mn", ratio: 50.0, input: "zodiac", count: 1 },
+            { id: "TMDS", name_zh: "特码单双", category: "only_mn", ratio: 1.0, input: "choice", choices: ["单", "双"], count: 1 },
+            { id: "DX", name_zh: "特码大小", category: "only_mn", ratio: 1.0, input: "choice", choices: ["大", "小"], count: 1 },
+            { id: "PTYX", name_zh: "平特一肖", category: "all_7", ratio: 1.0, input: "zodiac", count: 1 },
+            { id: "2LX", name_zh: "二连肖", category: "all_7", ratio: 3.0, input: "zodiac", count: 2 },
+            { id: "3LX", name_zh: "三连肖", category: "all_7", ratio: 10.0, input: "zodiac", count: 3 },
+            { id: "4LX", name_zh: "四连肖", category: "all_7", ratio: 300.0, input: "zodiac", count: 4 },
+            { id: "2Z2", name_zh: "二中二", category: "first_6", ratio: 60.0, input: "num", count: 2 },
+            { id: "3Z3", name_zh: "三中三", category: "first_6", ratio: 600.0, input: "num", count: 3 },
+            { id: "DP", name_zh: "单平/正码", category: "first_6", ratio: 6.0, input: "num", count: 1 }
+          ]
+        };
+
+        this.initDOM();
+        this.bindEvents();
+        this.renderAll();
+      }
+
+      getZodiac(num) { return ((num - 1) % 12) + 1; }
+
+      getAllBets() {
+        let bets = [...this.state.selfBetsList];
+        Object.values(this.state.clientSlipsMap).forEach(c => {
+          if (c.bets) bets = bets.concat(c.bets);
+        });
+        return bets;
+      }
+
+      initDOM() {
+        document.getElementById('host-draw-date').value = new Date().toISOString().split('T')[0];
+        this.renderBallSlots();
+        this.initSelfInputUI();
+      }
+
+      bindEvents() {
+        // Tab switching using event delegation
+        document.getElementById('main-nav-tabs').addEventListener('click', (e) => {
+          const btn = e.target.closest('.nav-tab-btn');
+          if (!btn) return;
+          document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+
+        // Controls
+        document.getElementById('payout-slider').addEventListener('input', (e) => {
+          this.state.payoutSliderVal = parseInt(e.target.value);
+          document.getElementById('slider-display-val').innerText = `${this.state.payoutSliderVal}%`;
+          this.updateMetrics();
+        });
+
+        document.getElementById('btn-run-gen').addEventListener('click', () => this.generateOptimizedDraw());
+        document.getElementById('btn-run-fair').addEventListener('click', () => this.generateFairDraw());
+        document.getElementById('btn-settle-all').addEventListener('click', () => this.settleAll());
+        document.getElementById('btn-reset-draw').addEventListener('click', () => {
+          this.state.drawNumbers = null;
+          this.settleAll();
+        });
+
+        document.getElementById('btn-unlock-all').addEventListener('click', () => {
+          this.state.lockedSlots = {};
+          this.renderBallSlots();
+        });
+
+        // Batch File Upload
+        document.getElementById('btn-trigger-upload').addEventListener('click', () => {
+          document.getElementById('host-batch-file').click();
+        });
+        document.getElementById('host-batch-file').addEventListener('change', (e) => this.handleBatchUpload(e));
+        document.getElementById('btn-clear-clients').addEventListener('click', () => {
+          if (confirm('是否确定清空客户数据？')) {
+            this.state.clientSlipsMap = {};
+            this.state.activeClientKey = null;
+            this.settleAll();
+          }
+        });
+
+        // Self Input
+        document.getElementById('btn-add-self-bet').addEventListener('click', () => this.addSelfBet());
+        document.getElementById('host-self-gametype').addEventListener('change', () => this.renderSelfPickArea());
+      }
+
+      renderBallSlots() {
+        const container = document.getElementById('draw-slots-container');
+        container.innerHTML = '';
+        for (let i = 0; i < 7; i++) {
+          const isMn = (i === 6);
+          const isLocked = (i in this.state.lockedSlots);
+          const num = isLocked ? this.state.lockedSlots[i] : (this.state.drawNumbers ? this.state.drawNumbers[i] : '?');
+
+          const slotDiv = document.createElement('div');
+          slotDiv.className = 'ball-slot';
+          slotDiv.innerHTML = `
+            <div class="ball-slot-num ${isMn ? 'mn' : ''} ${isLocked ? 'locked' : ''}" data-slot="${i}">${num}</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600;">${isMn ? '★ 特码' : '正码 ' + (i + 1)}</div>
+          `;
+          slotDiv.querySelector('.ball-slot-num').addEventListener('click', () => this.promptLockSlot(i));
+          container.appendChild(slotDiv);
+        }
+      }
+
+      promptLockSlot(idx) {
+        const current = this.state.lockedSlots[idx] || '';
+        const input = prompt(`请输入锁定号码 (1-48)，留空取消：`, current);
+        if (input === null || input.trim() === '') {
+          delete this.state.lockedSlots[idx];
+        } else {
+          const val = parseInt(input.trim());
+          if (isNaN(val) || val < 1 || val > 48) {
+            alert('请输入 1-48 之间的有效数字');
+            return;
+          }
+          this.state.lockedSlots[idx] = val;
+        }
+        this.renderBallSlots();
+      }
+
+      generateOptimizedDraw() {
+        const allBets = this.getAllBets();
+        const totalPool = allBets.reduce((sum, b) => sum + (b.bet_amount || 0), 0);
+        const targetPayout = totalPool * (this.state.payoutSliderVal / 100);
+
+        const lockedVals = new Set(Object.values(this.state.lockedSlots));
+        const availablePool = Array.from({ length: 48 }, (_, i) => i + 1).filter(n => !lockedVals.has(n));
+
+        const sample = () => {
+          const shuffled = [...availablePool].sort(() => 0.5 - Math.random());
+          const res = new Array(7);
+          let pIdx = 0;
+          for (let i = 0; i < 7; i++) {
+            res[i] = (i in this.state.lockedSlots) ? this.state.lockedSlots[i] : shuffled[pIdx++];
+          }
+          return res;
+        };
+
+        if (allBets.length === 0) {
+          this.state.drawNumbers = sample();
+          this.settleAll();
+          return;
+        }
+
+        let bestDraw = null, minDiff = Infinity;
+        for (let i = 0; i < 1500; i++) {
+          const cand = sample();
+          const candPayout = this.evaluatePayout(allBets, cand);
+          const diff = Math.abs(candPayout - targetPayout);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestDraw = cand;
+          }
+        }
+        this.state.drawNumbers = bestDraw;
+        this.settleAll();
+      }
+
+      generateFairDraw() {
+        const lockedVals = new Set(Object.values(this.state.lockedSlots));
+        const availablePool = Array.from({ length: 48 }, (_, i) => i + 1).filter(n => !lockedVals.has(n));
+        const shuffled = availablePool.sort(() => 0.5 - Math.random());
+        
+        const res = new Array(7);
+        let pIdx = 0;
+        for (let i = 0; i < 7; i++) {
+          res[i] = (i in this.state.lockedSlots) ? this.state.lockedSlots[i] : shuffled[pIdx++];
+        }
+        this.state.drawNumbers = res;
+        this.settleAll();
+      }
+
+      evaluatePayout(bets, draw) {
+        const first6 = new Set(draw.slice(0, 6));
+        const mn = draw[6];
+        const allZodiacs = new Set(draw.map(n => this.getZodiac(n)));
+        const mnZodiac = this.getZodiac(mn);
+        let total = 0;
+
+        for (let b of bets) {
+          let won = false;
+          if (b.category === "only_mn") {
+            if (b.bet_type === "TM") won = (mn === parseInt(b.selection));
+            else if (b.bet_type === "TX") won = (mnZodiac === parseInt(b.selection));
+            else if (b.bet_type === "TMDS") won = (b.selection === "单") ? (mn % 2 !== 0) : (mn % 2 === 0);
+            else if (b.bet_type === "DX") won = (b.selection === "大") ? (mn >= 25) : (mn <= 24);
+          } else if (b.category === "all_7") {
+            if (b.bet_type === "PTYX") won = allZodiacs.has(parseInt(b.selection));
+            else if (["2LX", "3LX", "4LX"].includes(b.bet_type)) {
+              const arr = Array.isArray(b.selection) ? b.selection : [b.selection];
+              won = arr.every(z => allZodiacs.has(parseInt(z)));
+            }
+          } else if (b.category === "first_6") {
+            if (b.bet_type === "DP") won = first6.has(parseInt(b.selection));
+            else if (["2Z2", "3Z3"].includes(b.bet_type)) {
+              const arr = Array.isArray(b.selection) ? b.selection : [b.selection];
+              won = arr.every(n => first6.has(parseInt(n)));
+            }
+          }
+          if (won) total += (b.bet_amount * b.pay_ratio);
+        }
+        return total;
+      }
+
+      settleAll() {
+        const allBets = this.getAllBets();
+        if (this.state.drawNumbers) {
+          const draw = this.state.drawNumbers;
+          const first6 = new Set(draw.slice(0, 6));
+          const mn = draw[6];
+          const allZodiacs = new Set(draw.map(n => this.getZodiac(n)));
+          const mnZodiac = this.getZodiac(mn);
+
+          allBets.forEach(b => {
+            let won = false;
+            if (b.category === "only_mn") {
+              if (b.bet_type === "TM") won = (mn === parseInt(b.selection));
+              else if (b.bet_type === "TX") won = (mnZodiac === parseInt(b.selection));
+              else if (b.bet_type === "TMDS") won = (b.selection === "单") ? (mn % 2 !== 0) : (mn % 2 === 0);
+              else if (b.bet_type === "DX") won = (b.selection === "大") ? (mn >= 25) : (mn <= 24);
+            } else if (b.category === "all_7") {
+              if (b.bet_type === "PTYX") won = allZodiacs.has(parseInt(b.selection));
+              else if (["2LX", "3LX", "4LX"].includes(b.bet_type)) {
+                const arr = Array.isArray(b.selection) ? b.selection : [b.selection];
+                won = arr.every(z => allZodiacs.has(parseInt(z)));
+              }
+            } else if (b.category === "first_6") {
+              if (b.bet_type === "DP") won = first6.has(parseInt(b.selection));
+              else if (["2Z2", "3Z3"].includes(b.bet_type)) {
+                const arr = Array.isArray(b.selection) ? b.selection : [b.selection];
+                won = arr.every(n => first6.has(parseInt(n)));
+              }
+            }
+            b.settled = true;
+            b.won = won;
+            b.payout = won ? (b.bet_amount * b.pay_ratio) : 0;
+            b.net_profit = won ? (b.payout - b.bet_amount) : -b.bet_amount;
+          });
+        } else {
+          allBets.forEach(b => { delete b.settled; delete b.won; delete b.payout; delete b.net_profit; });
+        }
+        this.renderAll();
+      }
+
+      updateMetrics() {
+        const allBets = this.getAllBets();
+        const totalPool = allBets.reduce((s, b) => s + (b.bet_amount || 0), 0);
+        let actualPayout = 0, playerProfit = 0;
+
+        if (this.state.drawNumbers) {
+          allBets.forEach(b => {
+            if (b.settled) {
+              actualPayout += b.payout || 0;
+              playerProfit += b.net_profit || 0;
+            }
+          });
+        }
+
+        const houseNet = -playerProfit;
+        document.getElementById('m-val-total-in').innerText = `¥${totalPool.toFixed(2)}`;
+        document.getElementById('m-val-target-payout').innerText = `¥${(totalPool * (this.state.payoutSliderVal / 100)).toFixed(2)}`;
+        document.getElementById('m-val-actual-payout').innerText = this.state.drawNumbers ? `¥${actualPayout.toFixed(2)}` : '--';
+        
+        const netEl = document.getElementById('m-val-house-profit');
+        netEl.innerText = this.state.drawNumbers ? `${houseNet >= 0 ? '+' : ''}¥${houseNet.toFixed(2)}` : '--';
+        netEl.style.color = houseNet >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
+        document.getElementById('f-total-count').innerText = allBets.length;
+        document.getElementById('f-total-bet').innerText = `¥${totalPool.toFixed(2)}`;
+        document.getElementById('f-house-profit').innerText = this.state.drawNumbers ? `¥${houseNet.toFixed(2)}` : '--';
+
+        document.getElementById('badge-all-bets').innerText = allBets.length;
+        document.getElementById('badge-clients-count').innerText = Object.keys(this.state.clientSlipsMap).length;
+      }
+
+      renderAll() {
+        this.renderBallSlots();
+        this.updateMetrics();
+        this.renderMasterTable();
+        this.renderQuickSettleTable();
+        this.renderClientSubtabs();
+        this.renderRulesAndZodiac();
+      }
+
+      renderMasterTable() {
+        const tbody = document.getElementById('master-bets-tbody');
+        tbody.innerHTML = '';
+        this.getAllBets().forEach((b, idx) => {
+          const tr = document.createElement('tr');
+          const selStr = Array.isArray(b.selection) ? b.selection.join(', ') : b.selection;
+          let statusStr = `<span style="color:var(--text-muted);">待开奖</span>`;
+          if (b.settled) {
+            statusStr = b.won 
+              ? `<span style="color:var(--accent-green); font-weight:700;">+¥${b.payout.toFixed(2)} 中奖</span>`
+              : `<span style="color:var(--accent-red);">未中</span>`;
+          }
+          tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><strong>${this.escapeHtml(b.client || 'Anonymous')}</strong></td>
+            <td>${b.device_id || '--'}</td>
+            <td>${(b.timestamp || '').split('T')[0] || ''}</td>
+            <td>${b.bet_type}</td>
+            <td style="color:var(--accent-gold); font-weight:700;">${selStr}</td>
+            <td>¥${(b.bet_amount || 0).toFixed(2)}</td>
+            <td>1:${b.pay_ratio}</td>
+            <td>¥${((b.bet_amount || 0) * b.pay_ratio).toFixed(2)}</td>
+            <td>${statusStr}</td>
+            <td>${b.settled ? (b.net_profit >= 0 ? '+' : '') + b.net_profit.toFixed(2) : '--'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      renderQuickSettleTable() {
+        const tbody = document.getElementById('quick-settle-tbody');
+        tbody.innerHTML = '';
+        const sources = [];
+        if (this.state.selfBetsList.length) sources.push({ name: '庄家自投', bets: this.state.selfBetsList });
+        Object.values(this.state.clientSlipsMap).forEach(c => sources.push({ name: c.clientName, bets: c.bets || [] }));
+
+        sources.forEach(s => {
+          let totalBet = 0, totalPay = 0;
+          s.bets.forEach(b => {
+            totalBet += b.bet_amount || 0;
+            if (b.settled) totalPay += b.payout || 0;
+          });
+          const houseNet = totalBet - totalPay;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${this.escapeHtml(s.name)}</strong></td>
+            <td>${s.bets.length}</td>
+            <td>¥${totalBet.toFixed(2)}</td>
+            <td>¥${totalPay.toFixed(2)}</td>
+            <td style="color:${(totalPay - totalBet) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">¥${(totalPay - totalBet).toFixed(2)}</td>
+            <td style="color:${houseNet >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">¥${houseNet.toFixed(2)}</td>
+            <td>${s.bets.length ? ((s.bets.filter(x => x.won).length / s.bets.length) * 100).toFixed(1) + '%' : '0%'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      handleBatchUpload(e) {
+        const files = Array.from(e.target.files);
+        let processed = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              if (file.name.endsWith('.json')) {
+                const data = JSON.parse(evt.target.result);
+                const key = data.device_id || file.name;
+                this.state.clientSlipsMap[key] = {
+                  clientName: data.client_name || file.name.replace('.json', ''),
+                  deviceId: data.device_id || 'FILE-IMPORT',
+                  bets: data.bets || []
+                };
+              }
+            } catch (err) { console.error('Error parsing file', err); }
+            processed++;
+            if (processed === files.length) this.settleAll();
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      renderClientSubtabs() {
+        const row = document.getElementById('client-subtabs-row');
+        row.innerHTML = '';
+        const keys = Object.keys(this.state.clientSlipsMap);
+        if (!keys.length) return;
+        if (!this.state.activeClientKey) this.state.activeClientKey = keys[0];
+
+        keys.forEach(k => {
+          const btn = document.createElement('button');
+          btn.className = `client-tab-btn ${k === this.state.activeClientKey ? 'active' : ''}`;
+          btn.innerText = `👤 ${this.state.clientSlipsMap[k].clientName}`;
+          btn.addEventListener('click', () => {
+            this.state.activeClientKey = k;
+            this.renderClientSubtabs();
+          });
+          row.appendChild(btn);
+        });
+      }
+
+      initSelfInputUI() {
+        const sel = document.getElementById('host-self-gametype');
+        sel.innerHTML = '';
+        this.state.rulesConfig.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.innerText = `${r.name_zh} (1:${r.ratio})`;
+          sel.appendChild(opt);
+        });
+        this.renderSelfPickArea();
+      }
+
+      renderSelfPickArea() {
+        const area = document.getElementById('host-self-pick-area');
+        area.innerHTML = `<input type="text" id="host-self-selection" placeholder="输入投注内容 (如: 12 或 1,2,3)" class="form-control">`;
+      }
+
+      addSelfBet() {
+        const gId = document.getElementById('host-self-gametype').value;
+        const rule = this.state.rulesConfig.find(r => r.id === gId);
+        const selVal = document.getElementById('host-self-selection').value.trim();
+        const amt = parseFloat(document.getElementById('host-self-amt').value) || 10;
+        const client = document.getElementById('host-self-client').value || '现场客户';
+
+        if (!selVal) return alert('请输入投注内容');
+
+        this.state.selfBetsList.push({
+          line: this.state.selfBetsList.length + 1,
+          client: client,
+          device_id: 'HOST-CONSOLE',
+          bet_type: rule.id,
+          category: rule.category,
+          selection: selVal.includes(',') ? selVal.split(',').map(Number) : selVal,
+          pay_ratio: rule.ratio,
+          bet_amount: amt,
+          timestamp: new Date().toISOString()
+        });
+
+        this.settleAll();
+      }
+
+      renderRulesAndZodiac() {
+        const rTbody = document.getElementById('rules-settings-tbody');
+        rTbody.innerHTML = '';
+        this.state.rulesConfig.forEach(r => {
+          rTbody.innerHTML += `<tr><td><strong>${r.id}</strong></td><td>${r.name_zh}</td><td>${r.category}</td><td>1:${r.ratio}</td></tr>`;
+        });
+
+        const zTbody = document.getElementById('zodiac-settings-tbody');
+        zTbody.innerHTML = '';
+        Object.entries(this.state.zodiacConfig).forEach(([id, z]) => {
+          zTbody.innerHTML += `<tr><td>Z${id}</td><td>${z.zh}</td><td>${z.en}</td><td>${z.numbers.join(', ')}</td></tr>`;
+        });
+      }
+
+      escapeHtml(str) {
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+    }
+
+    // Initialize application on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      window.appEngine = new Lucky48HostEngine();
+    });
+  </script>
+</body>
+</html>
